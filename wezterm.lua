@@ -54,10 +54,6 @@ config.launch_menu = {
   {label = 'Powershell',
   args =  {'pwsh'},
   },
-  {
-    label = 'Cycle server',
-    args = {Defualt, '-c ssh d932v894@cycle3.eecs.ku.edu'}
-  }
 
 }
 config.term = "wezterm"
