@@ -18,13 +18,9 @@ end
 config.color_scheme = 'Dracula (Official)'
 -- For some reason the pacman package the the scoop package have this font named diffrently
 function getFont()
-	if Iswindows() then
-	    return "Cascadia Code NF"
-	else
 	    return "CaskaydiaCove NF"
-	end
 end
-config.font = wezterm.font(getFont())
+config.font = wezterm.font_with_fallback({getFont()})
 config.enable_tab_bar = true
 if Iswindows() then
     config.max_fps = 60
