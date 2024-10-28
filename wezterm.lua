@@ -16,7 +16,15 @@ else
     config.default_prog = {'/usr/bin/fish'}
 end
 config.color_scheme = 'Dracula (Official)'
-config.font = wezterm.font("CaskaydiaCove NF")
+-- For some reason the pacman package the the scoop package have this font named diffrently
+function getFont()
+	if Iswindows() then
+	    return "Cascadia Code NF"
+	else
+	    return "CaskaydiaCove NF"
+	end
+end
+config.font = wezterm.font(getFont())
 config.enable_tab_bar = true
 if Iswindows() then
     config.max_fps = 60
