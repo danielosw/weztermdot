@@ -16,7 +16,7 @@ else
     config.default_prog = {'/usr/bin/fish'}
 end
 config.color_scheme = 'Dracula (Official)'
-config.font = wezterm.font("Cascadia Code NF")
+config.font = wezterm.font("CaskaydiaCove NF")
 config.enable_tab_bar = true
 if Iswindows() then
     config.max_fps = 60
