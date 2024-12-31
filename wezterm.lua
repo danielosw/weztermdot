@@ -2,7 +2,7 @@
 local wezterm = require("wezterm")
 
 -- This will hold the configuration.
-local config = wezterm.config_builder()
+config = wezterm.config_builder()
 function Iswindows()
 	return string.find(wezterm.target_triple, "windows") ~= nil
 end
@@ -14,19 +14,34 @@ else
 	config.default_prog = { "/usr/bin/fish" }
 end
 config.color_scheme = "Dracula (Official)"
--- For some reason the pacman package the the scoop package have this font named differently
-function getFont()
+-- put custom font logic here
+local function getFont()
 	return "CaskaydiaCove NF"
 end
 
 config.font = wezterm.font_with_fallback({ getFont() })
+config.harfbuzz_features = {
+	"calt",
+	"case",
+	"ccmp",
+	"fina",
+	"init",
+	"rclt",
+	"rlig",
+	"ss02",
+	"ss19",
+	"ss20",
+	"zero",
+	"mark",
+	"mkmk",
+}
 config.enable_tab_bar = true
 if windows then
 	config.max_fps = 60
 else
 	config.max_fps = 75
 end
-function getdefualt()
+local function getdefualt()
 	if windows then
 		return "pwsh"
 	else
@@ -70,5 +85,7 @@ table.insert(config.hyperlink_rules, {
 	regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
 	format = "https://www.github.com/$1/$3",
 })
+-- load plugins
+require("plugins.plugins")
 -- and finally, return the configuration to wezterm
 return config
