@@ -1,25 +1,22 @@
--- Pull in the wezterm API
-local wezterm = require("wezterm")
-
+-- Pull in the Wezterm API
+Wezterm = require("wezterm")
 -- This will hold the configuration.
-config = wezterm.config_builder()
-function Iswindows()
-	return string.find(wezterm.target_triple, "windows") ~= nil
-end
-
-local windows = Iswindows()
-if windows then
+config = Wezterm.config_builder()
+require("lib.lib")
+require("plugins.plugins")
+if Windows then
 	config.default_prog = { "pwsh" }
 else
 	config.default_prog = { "/usr/bin/fish" }
 end
+
 config.color_scheme = "Dracula (Official)"
 -- put custom font logic here
 local function getFont()
 	return "CaskaydiaCove NF"
 end
-
-config.font = wezterm.font_with_fallback({ getFont() })
+config.window_background_opacity = 1
+config.font = Wezterm.font_with_fallback({ getFont() })
 config.harfbuzz_features = {
 	"calt",
 	"case",
@@ -36,13 +33,13 @@ config.harfbuzz_features = {
 	"mkmk",
 }
 config.enable_tab_bar = true
-if windows then
+if Windows then
 	config.max_fps = 60
 else
 	config.max_fps = 75
 end
 local function getdefualt()
-	if windows then
+	if Windows then
 		return "pwsh"
 	else
 		return "/usr/bin/fish"
@@ -52,7 +49,7 @@ end
 Default = getdefualt()
 local function getlaunch()
 	local launches = {}
-	if windows then
+	if Windows then
 		launches[#launches + 1] = {
 			label = "Powershell",
 			args = { "pwsh" },
@@ -85,17 +82,9 @@ local function getlaunch()
 	return launches
 end
 config.launch_menu = getlaunch()
-config.term = "wezterm"
-config.hyperlink_rules = wezterm.default_hyperlink_rules()
--- make username/project paths clickable. this implies paths like the following are for github.
--- ( "nvim-treesitter/nvim-treesitter" | wbthomason/packer.nvim | wez/wezterm | "wez/wezterm.git" )
+config.term = "Wezterm"
+config.hyperlink_rules = Wezterm.default_hyperlink_rules() -- ( "nvim-treesitter/nvim-treesitter" | wbthomason/packer.nvim | wez/Wezterm | "wez/Wezterm.git" )
 -- as long as a full url hyperlink regex exists above this it should not match a full url to
 -- github or gitlab / bitbucket (i.e. https://gitlab.com/user/project.git is still a whole clickable url)
-table.insert(config.hyperlink_rules, {
-	regex = [[["]?([\w\d]{1}[-\w\d]+)(/){1}([-\w\d\.]+)["]?]],
-	format = "https://www.github.com/$1/$3",
-})
--- load plugins
-require("plugins.plugins")
--- and finally, return the configuration to wezterm
+-- and finally, return the configuration to Wezterm
 return config
