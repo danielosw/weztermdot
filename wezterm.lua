@@ -7,6 +7,7 @@ require("plugins.plugins")
 if Windows then
 	config.default_prog = { "pwsh" }
 else
+	config.term = "wezterm"
 	config.default_prog = { "/usr/bin/fish" }
 end
 
@@ -82,7 +83,6 @@ local function getlaunch()
 	return launches
 end
 config.launch_menu = getlaunch()
-config.term = "wezterm"
 config.hyperlink_rules = Wezterm.default_hyperlink_rules() -- ( "nvim-treesitter/nvim-treesitter" | wbthomason/packer.nvim | wez/Wezterm | "wez/Wezterm.git" )
 -- as long as a full url hyperlink regex exists above this it should not match a full url to
 -- github or gitlab / bitbucket (i.e. https://gitlab.com/user/project.git is still a whole clickable url)
