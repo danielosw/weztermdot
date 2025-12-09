@@ -1,5 +1,6 @@
--- Load plugin manager
+-- Load utilities (provides Windows global for platform detection)
 require("lib.lib")
+-- Load plugin manager
 local plugin_manager = require("lib.plugin_manager")
 
 -- Initialize and load all plugins

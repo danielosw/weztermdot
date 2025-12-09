@@ -1,5 +1,9 @@
 -- Plugin Manager for WezTerm Configuration
 -- Provides automatic plugin discovery, loading, and management
+-- 
+-- Note: This module can use the global Windows variable if available
+-- (set by lib/lib.lua) but will fallback to detecting the platform
+-- using package.config if not present.
 
 local M = {}
 
@@ -9,6 +13,7 @@ M.config = {
     auto_load = true,
     enabled_plugins = {}, -- empty means all plugins are enabled
     disabled_plugins = {}, -- plugins to explicitly disable
+    verbose = false, -- enable logging output
 }
 
 -- Store loaded plugins
@@ -37,18 +42,38 @@ local function dir_exists(path)
     return ok
 end
 
+-- Helper function to check if running on Windows
+local function is_windows()
+    -- Check if Windows global is set (from lib.lib)
+    if type(Windows) ~= "nil" then
+        return Windows
+    end
+    -- Fallback: check package.config separator
+    return package.config:sub(1,1) == '\\'
+end
+
+-- Helper function to sanitize path for shell commands
+local function sanitize_path(path)
+    -- Remove potentially dangerous characters
+    -- Keep only alphanumeric, -, _, /, \, and .
+    return path:gsub('[^%w%-%_/%\\%.]', '')
+end
+
 -- Helper function to scan directory for plugins
 local function scan_plugins_dir(base_path)
     local plugins = {}
     local handle
     
+    -- Sanitize path to prevent command injection
+    local safe_path = sanitize_path(base_path)
+    
     -- Try to open directory using different methods
-    if Windows then
+    if is_windows() then
         -- Windows: use dir command
-        handle = io.popen('dir "' .. base_path .. '" /b /ad 2>nul')
+        handle = io.popen('dir "' .. safe_path .. '" /b /ad 2>nul')
     else
         -- Unix-like: use ls command
-        handle = io.popen('ls -1 "' .. base_path .. '" 2>/dev/null')
+        handle = io.popen('ls -1 "' .. safe_path .. '" 2>/dev/null')
     end
     
     if not handle then
@@ -171,12 +196,14 @@ function M.load_plugins()
             local plugin_data = load_plugin(plugin_name, base_path)
             M.loaded_plugins[plugin_name] = plugin_data
             
-            if plugin_data.loaded then
-                print("✓ Loaded plugin: " .. plugin_name)
-            else
-                print("✗ Failed to load plugin: " .. plugin_name)
-                if plugin_data.error then
-                    print("  Error: " .. plugin_data.error)
+            if M.config.verbose then
+                if plugin_data.loaded then
+                    print("✓ Loaded plugin: " .. plugin_name)
+                else
+                    print("✗ Failed to load plugin: " .. plugin_name)
+                    if plugin_data.error then
+                        print("  Error: " .. plugin_data.error)
+                    end
                 end
             end
         end
@@ -243,6 +270,9 @@ function M.setup(opts)
     end
     if opts.disabled_plugins then
         M.config.disabled_plugins = opts.disabled_plugins
+    end
+    if opts.verbose ~= nil then
+        M.config.verbose = opts.verbose
     end
     
     -- Auto-load plugins if configured

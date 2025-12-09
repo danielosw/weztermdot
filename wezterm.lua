@@ -12,7 +12,8 @@ else
 end
 
 -- Use theme from plugin system if available, otherwise fallback to built-in
-if Themes and Themes["cyberdream"] then
+-- Note: Themes is set by plugins/plugins.lua via the plugin manager
+if type(Themes) == "table" and Themes["cyberdream"] then
 	config.colors = Themes["cyberdream"]
 else
 	config.color_scheme = "Dracula (Official)"
