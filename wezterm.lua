@@ -11,7 +11,12 @@ else
 	config.default_prog = { "/usr/bin/fish" }
 end
 
-config.color_scheme = "Dracula (Official)"
+-- Use theme from plugin system if available, otherwise fallback to built-in
+if Themes and Themes["cyberdream"] then
+	config.colors = Themes["cyberdream"]
+else
+	config.color_scheme = "Dracula (Official)"
+end
 -- put custom font logic here
 local function getFont()
 	return "CaskaydiaCove NF"
