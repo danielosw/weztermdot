@@ -56,41 +56,81 @@ end
 local function sanitize_path(path)
     -- Remove potentially dangerous characters
     -- Keep only alphanumeric, -, _, /, \, and .
-    return path:gsub('[^%w%-%_/%\\%.]', '')
+    local sanitized = path:gsub('[^%w%-%_/%\\%.]', '')
+    
+    -- Prevent directory traversal by removing .. sequences
+    sanitized = sanitized:gsub('%.%.', '')
+    
+    -- Normalize path separators based on platform
+    if is_windows() then
+        sanitized = sanitized:gsub('/', '\\')
+    else
+        sanitized = sanitized:gsub('\\', '/')
+    end
+    
+    return sanitized
 end
 
 -- Helper function to scan directory for plugins
+-- Note: This uses shell commands as a fallback since LuaFileSystem is not
+-- available by default in WezTerm's Lua environment. The path is sanitized
+-- to mitigate command injection risks, but this is not ideal for production.
+-- A future improvement would be to use native WezTerm file system APIs if available.
 local function scan_plugins_dir(base_path)
     local plugins = {}
-    local handle
+    
+    -- Validate that base_path doesn't try to escape the intended directory
+    if base_path:match("%.%.") then
+        if M.config.verbose then
+            print("Warning: Invalid plugin directory path (contains ..)")
+        end
+        return plugins
+    end
     
     -- Sanitize path to prevent command injection
     local safe_path = sanitize_path(base_path)
     
+    -- Additional validation: ensure path is what we expect
+    if not safe_path:match("^plugins") then
+        if M.config.verbose then
+            print("Warning: Plugin directory path does not start with 'plugins'")
+        end
+        return plugins
+    end
+    
+    local handle
+    local success, err
+    
     -- Try to open directory using different methods
     if is_windows() then
         -- Windows: use dir command
-        handle = io.popen('dir "' .. safe_path .. '" /b /ad 2>nul')
+        success, handle = pcall(io.popen, 'dir "' .. safe_path .. '" /b /ad 2>nul')
     else
         -- Unix-like: use ls command
-        handle = io.popen('ls -1 "' .. safe_path .. '" 2>/dev/null')
+        success, handle = pcall(io.popen, 'ls -1 "' .. safe_path .. '" 2>/dev/null')
     end
     
-    if not handle then
+    if not success or not handle then
+        if M.config.verbose then
+            print("Warning: Could not scan plugins directory: " .. tostring(err))
+        end
         return plugins
     end
     
     for dir in handle:lines() do
         -- Skip hidden directories and special entries
         if dir ~= "." and dir ~= ".." and not dir:match("^%.") then
-            local plugin_path = base_path .. "/" .. dir
-            -- Check if it's a directory and has an init.lua or plugin_name.lua
-            if dir_exists(plugin_path) then
-                local init_path = plugin_path .. "/init.lua"
-                local plugin_file = plugin_path .. "/" .. dir .. ".lua"
-                
-                if file_exists(init_path) or file_exists(plugin_file) then
-                    table.insert(plugins, dir)
+            -- Additional validation: only accept alphanumeric, dash, underscore
+            if dir:match("^[%w%-_]+$") then
+                local plugin_path = base_path .. "/" .. dir
+                -- Check if it's a directory and has an init.lua or plugin_name.lua
+                if dir_exists(plugin_path) then
+                    local init_path = plugin_path .. "/init.lua"
+                    local plugin_file = plugin_path .. "/" .. dir .. ".lua"
+                    
+                    if file_exists(init_path) or file_exists(plugin_file) then
+                        table.insert(plugins, dir)
+                    end
                 end
             end
         end

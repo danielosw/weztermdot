@@ -14,6 +14,7 @@ M.dependencies = {}
 -- Configuration
 M.config = {
     enabled = true,
+    verbose = false,
     greeting = "Hello from Example Plugin!",
 }
 
@@ -26,8 +27,8 @@ function M.setup(opts)
         M.config[key] = value
     end
     
-    -- Initialization
-    if M.config.enabled then
+    -- Initialization - only log if verbose mode is enabled
+    if M.config.enabled and M.config.verbose then
         print("✓ " .. M.name .. " loaded: " .. M.config.greeting)
     end
     

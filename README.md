@@ -241,6 +241,24 @@ plugin_manager.setup({
 })
 ```
 
+## Security Considerations
+
+The plugin manager implements several security measures:
+
+- **Path Sanitization**: Plugin directory paths are sanitized to prevent command injection
+- **Directory Validation**: Only paths starting with "plugins" are allowed
+- **Pattern Validation**: Plugin names must be alphanumeric with dashes/underscores only
+- **No Directory Traversal**: ".." sequences are blocked to prevent path traversal attacks
+
+⚠️ **Important**: Only load plugins from trusted sources. Plugins execute with the same privileges as WezTerm.
+
+### Best Practices
+
+1. **Review plugin code** before using it
+2. **Keep plugins updated** to the latest versions
+3. **Use the `disabled_plugins`** option to disable untrusted plugins
+4. **Monitor plugin output** with `verbose = true` during testing
+
 ## API Reference
 
 ### PluginManager Methods
@@ -253,6 +271,14 @@ plugin_manager.setup({
 - `get_available_plugins()` - Get list of discovered plugins
 - `get_plugin_modules()` - Get all plugin modules
 - `get_themes()` - Get all theme plugins
+
+### Configuration Options
+
+- `plugins_dir` - Directory to scan for plugins (default: "plugins")
+- `auto_load` - Automatically load plugins on startup (default: true)
+- `enabled_plugins` - Array of plugin names to load (empty = all)
+- `disabled_plugins` - Array of plugin names to skip
+- `verbose` - Enable detailed logging output (default: false)
 
 ### Plugin Metadata Fields
 
