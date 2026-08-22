@@ -13,10 +13,10 @@ end
 config.color_scheme = "Dracula (Official)"
 -- put custom font logic here
 local function getFont()
-	return "CaskaydiaCove NF"
+	return {'Cascadia Mono', 'Symbols Nerd Font'}
 end
 config.window_background_opacity = 1
-config.font = Wezterm.font_with_fallback({ getFont() })
+config.font = Wezterm.font_with_fallback( getFont() )
 config.harfbuzz_features = {
 	"calt",
 	"case",
